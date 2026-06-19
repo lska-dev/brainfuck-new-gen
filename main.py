@@ -50,7 +50,7 @@ class VM():
 
         return n
 
-    #TODO: {  }
+
     def math(self, str):
         tokens = str.split()
 
