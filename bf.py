@@ -7,14 +7,18 @@ class VM():
         self.ap = 0
         self.program = []
         self.input_buffer = []
+        self.labels = {}
+        self.callStack = []
 
         self.tokens = [
             #default
             "+", "-", ">", "<", "[", "]", ".", ",",
             #extend1
-            "Rv", "As", "Jmp", "Hex"
+            "Rv", "As", "Jmp", "Hex", "=", "Call",
+            #compiler
+            "/"
         ]
-        self.tokenMaxLen = 3
+        self.tokenMaxLen = 4
 
         for i in range(ln):
             self.ram.append(0)
@@ -43,7 +47,8 @@ class VM():
 
         elif s == ".":
             print(chr(self.ram[self.ap] & 0x7F),end='')
-        elif s == "h":
+
+        elif s == "Hex":
             print(hex(self.ram[self.ap]),end='')
 
         elif s == ",":
@@ -61,14 +66,22 @@ class VM():
             if self.ram[self.ap] != n:
                 self.pc = self.stack.pop(len(self.stack)-1)-1
 
-        elif s == 'r':
+        elif s == 'Rv':
             self.ram[self.ap] = 0
 
-        elif s == 'a':
+        elif s == 'As':
             self.ap = n
 
-        elif s == 'j':
+        elif s == 'Jmp':
             self.pc = n
+
+        elif s == 'Call':
+            self.callStack.append(self.pc + 1)
+            self.pc = n
+
+        elif s == '=':
+            self.pc  = self.callStack.pop(-1)
+
 
 
         return 1
@@ -94,6 +107,15 @@ class VM():
         if s.startswith("$"):
             ap = VM.getNumberSS(s.split("$")[1])
             return self.ram[ap]
+
+        elif s.startswith(":"):
+            l = s.split(":")[1]
+            if l in self.labels:
+                return self.labels[l]
+            else:
+                print(f"name {l} is not defined")
+                return 0
+
         else:
             return VM.getNumberSS(s)
 
@@ -130,6 +152,22 @@ class VM():
             if parse != -1:
                 self.program.append(parse)
                 s = ""
+
+        #labels generation
+        for i in range(len(self.program)):
+            c = self.program[i][0]
+            n = self.program[i][1]
+
+            if c == "/":
+                self.labels[n] = i
+                self.program[i] = ['nope', '0']
+
+            if not c in self.tokens:
+                print(f"invalid operation {c}")
+                return 1
+
+
+
         print(self.program)
         print("bytecode is generate")
         return 0
@@ -153,7 +191,7 @@ v = VM(1000)
 f = open("code.bf", "r")
 code = f.read()
 print(f"INTPR Process finished with exit code {v.run(code)}")
-print()
+
 
 
 

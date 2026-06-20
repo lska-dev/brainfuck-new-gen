@@ -1,12 +1,19 @@
-0a 10+
-1a 2+
+:main Jmp
 
-100a $0+  101a $1+   2a r
-[2a $100+ 101a - 0]
-2a h  r 10+  .
+#mul
+mul/
+100As Rv $0+  101As Rv $1+ 2As Rv #copy
+[ 2As $100+ 101As - 0] =
 
-2a r
 
-100a $0+  101a $1+   2a r
-[2a +  100a $101- 0]
-2a h  r 10+  .
+print/
+0As Rv 10+ . Rv 'e'+ . Rv 'x'+ . Rv 'i'+ . Rv 't'+ . = #->\nexit
+
+main/
+
+0As , 1As ,
+:mul Call
+2As Hex Rv
+:print Call
+
+

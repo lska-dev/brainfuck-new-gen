@@ -22,10 +22,14 @@ supported n types:
 |"0o"| oct |
 |"$n"| mem[[n]] |
 |"''"| ASCII |
+|":"| label |
 
-"rv" reset value
-{n}"as" set ap
-{n}"jmp" set pc
-"hex" console hex out
+"Call" call
+"Rv" reset value
+{n}"As" set ap
+{n}"Jmp" set pc
+"Hex" console hex out
+"=" return value
+{name}"/" label
 
 
