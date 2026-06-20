@@ -23,9 +23,9 @@ supported n types:
 |"$n"| mem[[n]] |
 |"''"| ASCII |
 
-"r" reset value
-{n}"a" set ap
-{n}"j" set pc
-"h" console hex out
+"rv" reset value
+{n}"as" set ap
+{n}"jmp" set pc
+"hex" console hex out
 
 

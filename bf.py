@@ -8,6 +8,14 @@ class VM():
         self.program = []
         self.input_buffer = []
 
+        self.tokens = [
+            #default
+            "+", "-", ">", "<", "[", "]", ".", ",",
+            #extend1
+            "Rv", "As", "Jmp", "Hex"
+        ]
+        self.tokenMaxLen = 3
+
         for i in range(ln):
             self.ram.append(0)
 
@@ -89,20 +97,40 @@ class VM():
         else:
             return VM.getNumberSS(s)
 
+    @staticmethod
+    def parse(s,list, ml):
+        for i in range(ml):
+            op = s[len(s)-1-i:]
+            n = s[:len(s)-1-i]
+            if op in list:
+                if n == '': n = "1"
+                #tockens
+                return [op,n]
+        #print(f"invalid instruction {s}")
+        return -1
+
+
     def compile(self,str):
-        str = str.replace(' ', "")
-        str = str.replace('\n', "")
+        code = ""
+        in_comment = False
+        #clear comments
+        for c in str:
+            if c == "#" and not in_comment: in_comment = True #start
+            if c == "\n" and in_comment: in_comment = False #end
+            if not in_comment:
+                if c != '\n' and c != ' ': code = code + c
+
+        print(code)
+
         self.program = []
         s = ""
-        for c in str:
-            if c in "+-[].,h<>raj":
-                if s == '':
-                    self.program.append([c, 1])
-                else:
-                    self.program.append([c, s])
+        for c in code:
+            s = f"{s}{c}"
+            parse = VM.parse(s, self.tokens, self.tokenMaxLen)
+            if parse != -1:
+                self.program.append(parse)
                 s = ""
-            else:
-                s = f"{s}{c}"
+        print(self.program)
         print("bytecode is generate")
         return 0
 
@@ -124,8 +152,8 @@ v = VM(1000)
 #v.dbg()
 f = open("code.bf", "r")
 code = f.read()
-print(f"Process finished with exit code {v.run(code)}")
-
+print(f"INTPR Process finished with exit code {v.run(code)}")
+print()
 
 
 
