@@ -20,7 +20,7 @@ supported n types:
 |"0x"| hex |
 |"0b"| bin |
 |"0o"| oct |
-|"$n"| mem[[n]] |
+|"$n"| pointer: var->memory, ap, pc |
 |"''"| ASCII |
 |":"| label |
 

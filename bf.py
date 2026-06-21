@@ -80,9 +80,8 @@ class VM():
 
         elif s == "Hex":
             e = self.mem_read()
-            print(e)
             if e == None: return 0
-            print(hex(e),end=' ')
+            print(hex(e), end='')
 
         elif s == ",":
             if len(self.input_buffer) == 0:
@@ -139,8 +138,14 @@ class VM():
     def getNum(self,st):
         s = str(st)
         if s.startswith("$"):
-            ap = VM.getNumberSS(s.split("$")[1])
-            return self.ram[ap]
+            s = s.split("$")[1]
+            if s == "ap":
+                return self.ap
+            elif s == "pc":
+                return self.pc
+            else:
+                ap = VM.getNumberSS(s)
+                return self.ram[ap]
 
         elif s.startswith(":"):
             l = s.split(":")[1]
@@ -200,7 +205,7 @@ class VM():
                 if self.program[i-1][0] != "Define":
                     print("expected Define before EndDef")
                     return 0
-                self.labels[self.program[i - 1][1]] = self.program[i][1]
+                self.labels[self.program[i - 1][1]] = self.getNum(self.program[i][1])
                 self.program[i] = ['nope', '0']
                 self.program[i - 1] = ['nope', '0']
 
@@ -213,6 +218,7 @@ class VM():
 
 
         print(self.program)
+        print(self.labels)
         print("bytecode is generate")
         return 1
 
