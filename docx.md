@@ -31,5 +31,5 @@ supported n types:
 "Hex" console hex out
 "=" return value
 {name}"/" label
-
+{name}"Define"{value}"EndDef" define
 

@@ -1,3 +1,4 @@
+main_os_var Define 100 EndDef
 :main Jmp
 
 #mul
@@ -7,13 +8,13 @@ mul/
 
 
 print/
-0As Rv 10+ . Rv 'e'+ . Rv 'x'+ . Rv 'i'+ . Rv 't'+ . = #->\nexit
+0As Rv 10+ . Rv 'e'+ . Rv 'x'+ . Rv 'i'+ . Rv 't'+ . = #->exit
 
 main/
 
 0As , 1As ,
 :mul Call
-2As Hex Rv
+2As 2As Hex Rv
 :print Call
 
-
+.............................

@@ -1,5 +1,14 @@
+errors = {
+    -2 : "COMPILE ERROR",
+    -1 : "EXECPTION",
+     0 : ""
+}
+
+
+
 class VM():
     def __init__(self, ln):
+        self.ln = ln
         self.ram = []
         self.debug = False
         self.stack = []
@@ -9,6 +18,7 @@ class VM():
         self.input_buffer = []
         self.labels = {}
         self.callStack = []
+        self.returnValue = 0
 
         self.tokens = [
             #default
@@ -16,12 +26,28 @@ class VM():
             #extend1
             "Rv", "As", "Jmp", "Hex", "=", "Call",
             #compiler
-            "/"
+            "/", "Define", "EndDef"
         ]
-        self.tokenMaxLen = 4
+        self.tokenMaxLen = 6
 
         for i in range(ln):
             self.ram.append(0)
+
+    def mem_read(self):
+        #print(f"read {self.ap}")
+        if self.ap < self.ln:
+            return self.ram[self.ap]
+        else:
+            print(f"to high adress {self.ap}")
+            return None
+
+    def mem_write(self, d):
+        if self.ap < self.ln:
+            self.ram[self.ap] = d
+            return 1
+        else:
+            print(f"to high adress {self.ap}")
+            return 0
 
     def dbg(self):
         self.debug = True
@@ -29,35 +55,42 @@ class VM():
     def inst(self, op):
         s = op[0]
         n = self.getNum(op[1])
+
         if s == "+":
-            self.ram[self.ap] += n
+            e = self.mem_read()
+            if e == None: return 0
+            self.mem_write(e + n)
 
         elif s == "-":
-            self.ram[self.ap] -= n
+            e = self.mem_read()
+            if e == None:return 0
+            self.mem_write(e-n)
 
         elif s == ">":
             self.ap += n
-            if self.ap > len(self.ram):
-                print("esc ap")
-                return 0
 
         elif s == "<":
             self.ap -= n
             if self.ap < 0: self.ap = 0
 
         elif s == ".":
-            print(chr(self.ram[self.ap] & 0x7F),end='')
+            e = self.mem_read()
+            if e == None: return 0
+            print(chr(e & 0x7F),end='')
 
         elif s == "Hex":
-            print(hex(self.ram[self.ap]),end='')
+            e = self.mem_read()
+            print(e)
+            if e == None: return 0
+            print(hex(e),end=' ')
 
         elif s == ",":
             if len(self.input_buffer) == 0:
                 for c in input(''):
                     self.input_buffer.append(c)
             if len(self.input_buffer) > 0:
-                self.ram[self.ap] = ord(self.input_buffer.pop(0))
-
+                e = self.mem_write(ord(self.input_buffer.pop(0)))
+                if e == 0: return 0
 
         elif s == "[":
             self.stack.append(self.pc)
@@ -67,7 +100,8 @@ class VM():
                 self.pc = self.stack.pop(len(self.stack)-1)-1
 
         elif s == 'Rv':
-            self.ram[self.ap] = 0
+            e = self.mem_write(0)
+            if e == 0: return 0
 
         elif s == 'As':
             self.ap = n
@@ -153,7 +187,7 @@ class VM():
                 self.program.append(parse)
                 s = ""
 
-        #labels generation
+        #labels generation and check operations
         for i in range(len(self.program)):
             c = self.program[i][0]
             n = self.program[i][1]
@@ -162,35 +196,51 @@ class VM():
                 self.labels[n] = i
                 self.program[i] = ['nope', '0']
 
+            if c == "EndDef":
+                if self.program[i-1][0] != "Define":
+                    print("expected Define before EndDef")
+                    return 0
+                self.labels[self.program[i - 1][1]] = self.program[i][1]
+                self.program[i] = ['nope', '0']
+                self.program[i - 1] = ['nope', '0']
+
             if not c in self.tokens:
                 print(f"invalid operation {c}")
-                return 1
+                return 0
+
+
 
 
 
         print(self.program)
         print("bytecode is generate")
-        return 0
+        return 1
 
     def run(self,str):
         print("run VM")
-        if self.compile(str) == 1:
-            return -2
+        if self.compile(str) == 0: return -2 #compile error
 
         while self.pc < len(self.program):
+
+            """ FIX IT """
             if self.debug:
                 print(self.program)
                 print(f"\r{'^' * self.pc}")
-            if self.inst(self.program[self.pc]) == 0:return 0
+            """ FIX IT """
+
+            if self.inst(self.program[self.pc]) == 0:return -1
             self.pc += 1
 
-        return 1
+        return 0
 
 v = VM(1000)
 #v.dbg()
 f = open("code.bf", "r")
 code = f.read()
-print(f"INTPR Process finished with exit code {v.run(code)}")
+
+
+#tread = v.run(code)
+print(f"INTPR Process finished with exit code {v.run(code)}") # ({errors[tread]})")
 
 
 
