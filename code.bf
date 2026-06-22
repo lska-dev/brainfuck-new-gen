@@ -1,6 +1,7 @@
 #test bf program
 
 :all_tests Jmp
+std Import
 
 #console
 Rv
@@ -14,7 +15,7 @@ Rv 10+ .               # \n
 
 #cycle
 counterr/
-:counter As Rv         # reset counter
+:counter As :aRv         # reset counter
 [                                     #for...
 :counter As
 Hex                    # out counter
@@ -35,28 +36,7 @@ ar1Set/
 'd'+ > '!'+ > Rv       # terminator
 0As =
 
-#=======================================================================================================================
-#                                                  STRING
-#=======================================================================================================================
 
-#print
-print/                 # 0 - arr
-$0As [. > 0] 10+ . Rv  # endl
-=                      # return
-
-#len
-len/                   # 0 - arr 0 - ret
-1As Rv $0+             # save pointer
-0As -                  # pointer -= 1
-[ 0As+ $0As 0]         # counter
-0As $1-                # end - start + 1
-=                      # return
-
-#input
-input/
-:iAs <
-[> ,. 0]             # buffer to string array
-=
 
 all_tests/
 

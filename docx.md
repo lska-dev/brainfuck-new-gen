@@ -33,3 +33,5 @@ supported n types:
 {name}"/" label
 {name}"Define"{value}"EndDef" define
 
+:all_testsJmpprint/$0As[.>0]10+.:1Rv=len/1AsRv$0+0As-[0As+$0As0]0As$1-=input/:iAs<[>,.0]=Rvconsole/:'a'+.HexRv10+.==counterr/:counterAsRv[:counterAsHex:valAs''+.Rv:counterAs+10]=ar1Set/:ar1As10+>'h'+>'e'+>'l'+>'l'+>'o'+>''+>'w'+>'o'+>'r'+>'l'+>'d'+>'!'+>Rv0As=all_tests/counterDefine0EndDefvalDefine1EndDefar1Define0x80EndDefiDefine0xffEndDef:ar1SetCall.:consoleCall.:counterrCall.0AsRv:ar1+:printCall0AsRv:ar1+:lenCall0AsHex:inputCall0As10+.0AsRv:i:printCall0AsRv:i:lenCall
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^Ты блять долбаеб, нахуй!

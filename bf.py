@@ -19,6 +19,7 @@ class VM():
         self.labels = {}
         self.callStack = []
         self.returnValue = 0
+        self.lib = ""; self.raw_pointer = 0; self.raw_inst_len = 0; self.raw_code = {}
 
         self.tokens = [
             #default
@@ -26,7 +27,9 @@ class VM():
             #extend1
             "Rv", "As", "Jmp", "Hex", "=", "Call",
             #compiler
-            "/", "Define", "EndDef"
+            "/", "Define", "EndDef", "Import",
+            #spec
+            "nope"
         ]
         self.tokenMaxLen = 6
 
@@ -38,6 +41,7 @@ class VM():
         if self.ap < self.ln:
             return self.ram[self.ap]
         else:
+            self.raise_op()
             print(f"to high adress {self.ap}")
             return None
 
@@ -46,15 +50,41 @@ class VM():
             self.ram[self.ap] = d
             return 1
         else:
+            self.raise_op()
             print(f"to high adress {self.ap}")
             return 0
 
     def dbg(self):
         self.debug = True
 
+    def raise_op(self):
+        #pn = self.raw_code[self.raw_pointer - 25:self.raw_pointer + 25]
+        print(f"\n\n\x1b[31mInterupt in {self.lib}:\n{self.raw_code[self.lib]}\n{"~" * (self.raw_pointer+2)}{"^" * self.raw_inst_len}Ты блять долбаеб, нахуй!")
+
+    def import_file(self, path):
+        try:
+            f = open(path+".bf", "r")
+            code = f.read()
+            f.close()
+        except FileNotFoundError:
+            try:
+                f = open(f"libs/{path}.bf", "r")
+                code = f.read()
+                f.close()
+            except FileNotFoundError:
+                self.raise_op()
+                print(f"libraly {path} not found")
+                return 0
+        return code
+
+
     def inst(self, op):
         s = op[0]
         n = self.getNum(op[1])
+
+        self.lib = op[2]
+        self.raw_pointer = op[3]
+        self.raw_inst_len = op[4]
 
         if s == "+":
             e = self.mem_read()
@@ -87,6 +117,7 @@ class VM():
             if len(self.input_buffer) == 0:
                 for c in input(''):
                     self.input_buffer.append(c)
+                self.input_buffer.append("\x00")
             if len(self.input_buffer) > 0:
                 e = self.mem_write(ord(self.input_buffer.pop(0)))
                 if e == 0: return 0
@@ -152,6 +183,7 @@ class VM():
             if l in self.labels:
                 return self.labels[l]
             else:
+                self.raise_op()
                 print(f"name {l} is not defined")
                 return 0
 
@@ -185,33 +217,50 @@ class VM():
 
         self.program = []
         s = ""
-        for c in code:
-            s = f"{s}{c}"
+        for i in range(len(code)):
+            s = f"{s}{code[i]}"
             parse = VM.parse(s, self.tokens, self.tokenMaxLen)
-            if parse != -1:
-                self.program.append(parse)
-                s = ""
 
-        #labels generation and check operations
+            if parse != -1:
+                if parse[0] == "Import":
+                    print(f"Importing {parse[1]} lib ")
+                    self.lib = parse[1]
+                    tmp = self.program
+                    lib = self.import_file(parse[1])
+                    if lib == 0: return 0  # err
+                    lib = self.compile(lib)  # recurse
+                    if lib == 0: return 0  # recurse error
+                    self.program = tmp + self.program
+                    self.lib = ""
+                else:
+
+                    self.program.append(parse + [self.lib, i, len(f"{parse[0]}{parse[1]}")])
+                    s = ""
+
+        #labels generation and check operations и я хз как это назвать
         for i in range(len(self.program)):
             c = self.program[i][0]
             n = self.program[i][1]
 
             if c == "/":
                 self.labels[n] = i
-                self.program[i] = ['nope', '0']
+                self.program[i] = ['nope', '0', '', 0, 0]
 
             if c == "EndDef":
                 if self.program[i-1][0] != "Define":
+                    self.raise_op()
                     print("expected Define before EndDef")
                     return 0
                 self.labels[self.program[i - 1][1]] = self.getNum(self.program[i][1])
-                self.program[i] = ['nope', '0']
-                self.program[i - 1] = ['nope', '0']
+                self.program[i] = ['nope', '0', '', 0, 0]
+                self.program[i - 1] = ['nope', '0', '', 0, 0]
 
             if not c in self.tokens:
+                self.raise_op()
                 print(f"invalid operation {c}")
                 return 0
+
+        if not self.lib in self.raw_code: self.raw_code[self.lib] = code
 
 
 
@@ -225,7 +274,7 @@ class VM():
     def run(self,str):
         print("run VM")
         if self.compile(str) == 0: return -2 #compile error
-
+        print("\n\n\n")
         while self.pc < len(self.program):
 
             """ FIX IT """
@@ -243,10 +292,11 @@ v = VM(1000)
 #v.dbg()
 f = open("code.bf", "r")
 code = f.read()
+f.close()
 
 
-#tread = v.run(code)
-print(f"INTPR Process finished with exit code {v.run(code)}") # ({errors[tread]})")
+tread = v.run(code)
+print(f"INTPR Process finished with exit code {tread} ({errors[tread]})")
 
 
 
