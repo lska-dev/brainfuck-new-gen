@@ -15,7 +15,7 @@ Rv 10+ .               # \n
 
 #cycle
 counterr/
-:counter As :aRv         # reset counter
+:counter As Rv         # reset counter
 [                                     #for...
 :counter As
 Hex                    # out counter
@@ -58,5 +58,15 @@ i Define 0xff EndDef
 0As 10+ .
 0As Rv :i              # pointer to input
 :print Call            # echo
-0As Rv :i              # pointer to input
+0As Rv :1i              # pointer to input
 :len Call
+
+v = VM(1000)
+#v.dbg()
+f = open("code.bf", "r")
+code = f.read()
+f.close()
+
+
+tread = v.run(code)
+print(f"INTPR Process finished with exit code {tread} ({errors[tread]})")

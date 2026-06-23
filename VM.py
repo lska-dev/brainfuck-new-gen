@@ -20,12 +20,19 @@ class VM():
         self.callStack = []
         self.returnValue = 0
         self.lib = ""; self.raw_pointer = 0; self.raw_inst_len = 0; self.raw_code = {}
+        self.imported_libs = []
+        self.registers = []
+
+        for i in range(100):
+            self.registers.append(0)
 
         self.tokens = [
             #default
             "+", "-", ">", "<", "[", "]", ".", ",",
             #extend1
-            "Rv", "As", "Jmp", "Hex", "=", "Call",
+            "Rv", "As", "Jmp", "Hex", "=", "Call", "Rset",
+            #extend2
+            "Mul", "Div", "FDiv",
             #compiler
             "/", "Define", "EndDef", "Import",
             #spec
@@ -146,7 +153,26 @@ class VM():
         elif s == '=':
             self.pc  = self.callStack.pop(-1)
 
+        if s == "Mul":
+            e = self.mem_read()
+            if e == None: return 0
+            self.mem_write(e * n)
 
+        elif s == "Div":
+            e = self.mem_read()
+            if e == None:return 0
+            self.mem_write(e / n)
+
+        elif s == "FDiv":
+            e = self.mem_read()
+            if e == None: return 0
+            self.mem_write(e // n)
+
+        elif s == "Rset":
+            if n < len(self.registers):
+                e = self.mem_read()
+                if e == None: return 0
+                self.registers[n]
 
         return 1
     @staticmethod
@@ -168,16 +194,22 @@ class VM():
 
     def getNum(self,st):
         s = str(st)
+
+        #pointer
         if s.startswith("$"):
             s = s.split("$")[1]
+            #$ap
             if s == "ap":
                 return self.ap
+            #$pc
             elif s == "pc":
                 return self.pc
+            #imm
             else:
                 ap = VM.getNumberSS(s)
                 return self.ram[ap]
 
+        #label
         elif s.startswith(":"):
             l = s.split(":")[1]
             if l in self.labels:
@@ -186,6 +218,15 @@ class VM():
                 self.raise_op()
                 print(f"name {l} is not defined")
                 return 0
+        #register
+        elif s.startswith("r"):
+            l = s.split("r")[1]
+            r = VM.getNumberSS(l)
+            if r < len(self.registers):
+                return r
+            else:
+                self.raise_op()
+                print(f"invalid register {l}")
 
         else:
             return VM.getNumberSS(s)
@@ -213,7 +254,7 @@ class VM():
             if not in_comment:
                 if c != '\n' and c != ' ': code = code + c
 
-        print(code)
+        #print(code)
 
         self.program = []
         s = ""
@@ -222,7 +263,7 @@ class VM():
             parse = VM.parse(s, self.tokens, self.tokenMaxLen)
 
             if parse != -1:
-                if parse[0] == "Import":
+                if parse[0] == "Import" and not parse[1] in self.imported_libs:
                     print(f"Importing {parse[1]} lib ")
                     self.lib = parse[1]
                     tmp = self.program
@@ -231,6 +272,7 @@ class VM():
                     lib = self.compile(lib)  # recurse
                     if lib == 0: return 0  # recurse error
                     self.program = tmp + self.program
+                    self.imported_libs.append(parse[1])
                     self.lib = ""
                 else:
 
@@ -241,11 +283,11 @@ class VM():
         for i in range(len(self.program)):
             c = self.program[i][0]
             n = self.program[i][1]
-
+            # label
             if c == "/":
                 self.labels[n] = i
                 self.program[i] = ['nope', '0', '', 0, 0]
-
+            #define
             if c == "EndDef":
                 if self.program[i-1][0] != "Define":
                     self.raise_op()
@@ -254,7 +296,7 @@ class VM():
                 self.labels[self.program[i - 1][1]] = self.getNum(self.program[i][1])
                 self.program[i] = ['nope', '0', '', 0, 0]
                 self.program[i - 1] = ['nope', '0', '', 0, 0]
-
+            #invalid
             if not c in self.tokens:
                 self.raise_op()
                 print(f"invalid operation {c}")
@@ -266,15 +308,15 @@ class VM():
 
 
 
-        print(self.program)
-        print(self.labels)
-        print("bytecode is generate")
+        #print(self.program)
+        #print(self.labels)
+        #print("bytecode is generate")
         return 1
 
     def run(self,str):
         print("run VM")
         if self.compile(str) == 0: return -2 #compile error
-        print("\n\n\n")
+        print("\n")
         while self.pc < len(self.program):
 
             """ FIX IT """
@@ -287,21 +329,26 @@ class VM():
             self.pc += 1
 
         return 0
+import sys
 
-v = VM(1000)
+if __name__ == "__main__":
+
+    if len(sys.argv) < 2:
+        input_path = "code.bf"
+        virtual_memory = 1000
+    else:
+        input_path         = sys.argv[1]
+        virtual_memory     = int(sys.argv[2],16)
+
+    BFVM = VM(virtual_memory)
+    f = open(input_path, "r")
+    code = f.read()
+    f.close()
+
+    tread = BFVM.run(code)
+    print(f"\nINTPR Process finished with exit code {tread} ({errors[tread]})")
+    sys.exit(1)
 #v.dbg()
-f = open("code.bf", "r")
-code = f.read()
-f.close()
-
-
-tread = v.run(code)
-print(f"INTPR Process finished with exit code {tread} ({errors[tread]})")
-
-
-
-
-
 
 
 

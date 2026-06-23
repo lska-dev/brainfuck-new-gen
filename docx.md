@@ -1,37 +1,66 @@
-
-update 1:
+# commands
+## update 1:
 add number argument:
 {command}{number}
 
-{n}"+" add n or increment memory[[ap]] ,if n = '' 
-{n}"-" sub n or decrement memory[[ap]] ,if n = ''
-{n}">" add n or increment ap ,if n = ''
-{n}"<" sub n or decrement ap ,if n = ''
+`{n}+` value += n or 1
+`{n}-` value -= n or 1
+`{n}>` ap += n or 1
+`{n}<` ap -= n or 1
 
-"[" loop start point
-{n}"]" loop end operator, jmp to start if memory[[ap]] != n
-"." print ASCII charapter memory[[ap]]
-"," console input on input buffer head to memory[[ap]]
+`[` loop start point
+`{n}]` loop end operator, jmp to start if value != n
+`.` print ASCII charapter on value
+`,` console input on input buffer head to value
 
-supported n types:
-|m|type|
-|--|--|
-|""| dec |
-|"0x"| hex |
-|"0b"| bin |
-|"0o"| oct |
-|"$n"| pointer: var->memory, ap, pc |
-|"''"| ASCII |
-|":"| label |
+`Call` call
+`Rv` reset value
+`{n}As` set ap
+`{n}Jmp` set pc
+`Hex` console hex out
+`=` return value
+`{name}/` label
+`{name}Define{value}EndDef` define
 
-"Call" call
-"Rv" reset value
-{n}"As" set ap
-{n}"Jmp" set pc
-"Hex" console hex out
-"=" return value
-{name}"/" label
-{name}"Define"{value}"EndDef" define
+`{path or name}Import` 
+`{n}Mul` 
+`{n}Div`
+`{n}FDiv`
 
-:all_testsJmpprint/$0As[.>0]10+.:1Rv=len/1AsRv$0+0As-[0As+$0As0]0As$1-=input/:iAs<[>,.0]=Rvconsole/:'a'+.HexRv10+.==counterr/:counterAsRv[:counterAsHex:valAs''+.Rv:counterAs+10]=ar1Set/:ar1As10+>'h'+>'e'+>'l'+>'l'+>'o'+>''+>'w'+>'o'+>'r'+>'l'+>'d'+>'!'+>Rv0As=all_tests/counterDefine0EndDefvalDefine1EndDefar1Define0x80EndDefiDefine0xffEndDef:ar1SetCall.:consoleCall.:counterrCall.0AsRv:ar1+:printCall0AsRv:ar1+:lenCall0AsHex:inputCall0As10+.0AsRv:i:printCall0AsRv:i:lenCall
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^Ты блять долбаеб, нахуй!
+## supported number types:
+| prefix | type                         |
+|:------:|------------------------------|
+|        | dec                          |
+|  `0x`  | hex                          |
+|  `0b`  | bin                          |
+|  `0o`  | oct                          |
+|  `$n`  | pointer: var->memory, ap, pc |
+|  `''`  | ASCII                        |
+|  `:`   | label                        |
+|  `r`   | get register                 |
+|  `@`   | get next empty label         |
+
+---
+
+# Default libs
+
+## 1.FRL (F#ck Rules Language)
+default library **FRL** give defined for default Registers VM
+### register table
+|   mnemonic    | description          |
+|:-------------:|:---------------------|
+| `arg0-arg7`   | positional arguments |
+|  `tmp0-tmp7`  | temporary            |
+
+### read register
+brainfuck ``
+#read register tmp0
+0As Rv #clear value
+r:tmp0+ #tmp0 -> value
+``
+### write register
+brainfuck `` 
+#write $0 to register tmp0
+Rv $0+ #get $0
+
+``
