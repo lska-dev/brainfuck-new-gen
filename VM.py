@@ -22,6 +22,7 @@ class VM():
         self.lib = ""; self.raw_pointer = 0; self.raw_inst_len = 0; self.raw_code = {}
         self.imported_libs = []
         self.registers = []
+        self.flag_lg = False
 
         for i in range(100):
             self.registers.append(0)
@@ -33,6 +34,8 @@ class VM():
             "Rv", "As", "Jmp", "Hex", "=", "Call", "Rset",
             #extend2
             "Mul", "Div", "FDiv",
+            #logical
+            "==val", ">val", "<val", "Andval", "Orval", "Notval", "IfJmP", "IfCalL",
             #compiler
             "/", "Define", "EndDef", "Import",
             #spec
@@ -42,6 +45,14 @@ class VM():
 
         for i in range(ln):
             self.ram.append(0)
+
+    @staticmethod
+    def log(na):
+        if na == 0 or not na:
+            return False
+        else:
+            return True
+
 
     def mem_read(self):
         #print(f"read {self.ap}")
@@ -174,9 +185,36 @@ class VM():
                 if e == None: return 0
                 self.registers[n]
 
+        elif s == "==val":
+            self.flag_lg = n == self.mem_read()
+
+        elif s == ">val":
+            self.flag_lg = n > self.mem_read()
+
+        elif s == "<val":
+            self.flag_lg = n < self.mem_read()
+
+        elif s == "Andval":
+            self.flag_lg = VM.log(n) and VM.log(self.mem_read())
+
+        elif s == "Orval":
+            self.flag_lg = VM.log(n) or VM.log(self.mem_read())
+
+        elif s == "Notval":
+            self.flag_lg = not VM.log(self.mem_read())
+
+        elif s == "IfJmp":
+            if self.flag_lg:
+                self.pc = n
+
+        elif s == "IfCall":
+            if self.flag_lg:
+                self.callStack.append(self.pc + 1)
+                self.pc = n
+
         return 1
-    @staticmethod
-    def getNumberSS(s):
+
+    def getNumberSS(self, s):
         if s.startswith("0x"):
             return int(s,16)
         elif s.startswith("0b"):
@@ -190,7 +228,12 @@ class VM():
             else:
                 return ord(s[1])
         else:
-            return int(s,10)
+            try:
+                return int(s,10)
+            except ValueError:
+                self.raise_op()
+                print(f"invalid literal on base 10 {s}")
+                return 0
 
     def getNum(self,st):
         s = str(st)
@@ -206,7 +249,7 @@ class VM():
                 return self.pc
             #imm
             else:
-                ap = VM.getNumberSS(s)
+                ap = self.getNumberSS(s)
                 return self.ram[ap]
 
         #label
@@ -221,7 +264,7 @@ class VM():
         #register
         elif s.startswith("r"):
             l = s.split("r")[1]
-            r = VM.getNumberSS(l)
+            r = self.getNumberSS(l)
             if r < len(self.registers):
                 return r
             else:
@@ -229,7 +272,7 @@ class VM():
                 print(f"invalid register {l}")
 
         else:
-            return VM.getNumberSS(s)
+            return self.getNumberSS(s)
 
     @staticmethod
     def parse(s,list, ml):

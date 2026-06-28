@@ -4,8 +4,13 @@
 
 #print
 print/                 # 0 - arr
-$0As [. > 0] 10+ . Rv  # endl
+r:arg0As
+[. > 0]                # all sring
+10+ . Rv               # endl
 =                      # return
+
+endl/
+Rv 10+ . Rv            # endl
 
 #len
 len/                   # 0 - arr 0 - ret
@@ -20,3 +25,4 @@ input/
 :iAs <
 [> ,. 0]             # buffer to string array
 =
+

@@ -1,7 +1,10 @@
 #test bf program
 
+
+
 :all_tests Jmp
-std Import
+
+strings Import
 
 #console
 Rv
@@ -61,12 +64,3 @@ i Define 0xff EndDef
 0As Rv :1i              # pointer to input
 :len Call
 
-v = VM(1000)
-#v.dbg()
-f = open("code.bf", "r")
-code = f.read()
-f.close()
-
-
-tread = v.run(code)
-print(f"INTPR Process finished with exit code {tread} ({errors[tread]})")
